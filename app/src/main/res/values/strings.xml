@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">CleanArchitectureSample</string>
+    <string name="request_new_location">Request new location</string>
+    <string name="location_icon">Location icon</string>
+    <string name="location_coordinates">%1$f | %2$f</string>
+    <string name="location_date">%1$s</string>
+</resources>
