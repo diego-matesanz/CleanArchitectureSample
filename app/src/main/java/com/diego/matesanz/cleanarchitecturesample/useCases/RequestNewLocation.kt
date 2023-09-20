@@ -5,5 +5,5 @@ import com.diego.matesanz.cleanarchitecturesample.domain.Location
 
 class RequestNewLocation(private val locationsRepository: LocationsRepository) {
 
-    operator fun invoke(): List<Location> = locationsRepository.requestNewLocation()
+    suspend operator fun invoke(): List<Location> = locationsRepository.requestNewLocation()
 }

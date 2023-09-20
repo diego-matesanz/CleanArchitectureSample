@@ -7,9 +7,9 @@ class LocationsRepository(
     private val deviceLocationSource: DeviceLocationSource
 ) {
 
-    fun getSavedLocations(): List<Location> = locationPersistenceSource.getPersistedLocations()
+    suspend fun getSavedLocations(): List<Location> = locationPersistenceSource.getPersistedLocations()
 
-    fun requestNewLocation(): List<Location> {
+    suspend fun requestNewLocation(): List<Location> {
         val newLocation = deviceLocationSource.getDeviceLocation()
         locationPersistenceSource.saveNewLocation(newLocation)
         return getSavedLocations()

@@ -4,6 +4,6 @@ import com.diego.matesanz.cleanarchitecturesample.domain.Location
 
 interface LocationPersistenceSource {
 
-    fun getPersistedLocations(): List<Location>
+    suspend fun getPersistedLocations(): List<Location>
     fun saveNewLocation(location: Location)
 }
