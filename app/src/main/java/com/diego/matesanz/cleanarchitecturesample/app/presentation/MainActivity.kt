@@ -1,7 +1,6 @@
 package com.diego.matesanz.cleanarchitecturesample.app.presentation
 
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel.stateObservable.addObserver(::updateUI)
+        viewModel.mainState.observe(this, ::updateUI)
 
         Glide.with(this)
             .load(R.drawable.loader)
@@ -48,11 +47,6 @@ class MainActivity : AppCompatActivity() {
         binding.buttonRequestLocation.setOnClickListener {
             viewModel.newLocationClicked()
         }
-    }
-
-    override fun onDestroy() {
-        viewModel.onDestroy()
-        super.onDestroy()
     }
 
     private fun updateUI(screenState: ScreenState<MainState>) {

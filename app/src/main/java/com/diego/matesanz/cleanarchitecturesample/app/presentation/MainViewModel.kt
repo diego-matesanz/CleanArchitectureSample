@@ -1,5 +1,7 @@
 package com.diego.matesanz.cleanarchitecturesample.app.presentation
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diego.matesanz.cleanarchitecturesample.useCases.GetLocations
@@ -12,26 +14,25 @@ class MainViewModel(
     private val requestNewLocation: RequestNewLocation
 ) : ViewModel() {
 
-    val stateObservable = Observable<ScreenState<MainState>>()
+    val mainState: LiveData<ScreenState<MainState>>
+        get() = _mainState
+
+    private val _mainState: MutableLiveData<ScreenState<MainState>> = MutableLiveData()
 
     fun getSavedLocations() {
         viewModelScope.launch {
-            stateObservable.callObservers(ScreenState.Loading)
+            _mainState.value = ScreenState.Loading
             val locations = async { getLocations() }
-            stateObservable.callObservers(ScreenState.Render(MainState.ShowLocations(locations.await())))
+           _mainState.value = ScreenState.Render(MainState.ShowLocations(locations.await()))
         }
     }
 
     fun newLocationClicked() {
         viewModelScope.launch {
-            stateObservable.callObservers(ScreenState.Loading)
+            _mainState.value = ScreenState.Loading
             val locations = async { requestNewLocation() }
-            stateObservable.callObservers(ScreenState.Render(MainState.ShowLocations(locations.await())))
-            stateObservable.callObservers(ScreenState.Render(MainState.ShowMessage("New location saved")))
+            _mainState.value = ScreenState.Render(MainState.ShowLocations(locations.await()))
+            _mainState.value = ScreenState.Render(MainState.ShowMessage("New location saved"))
         }
-    }
-
-    fun onDestroy() {
-        stateObservable.clearObservers()
     }
 }
