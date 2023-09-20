@@ -9,21 +9,29 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val getLocations: GetLocations,
-    private val requestNewLocation: RequestNewLocation,
-    private val render: Render
+    private val requestNewLocation: RequestNewLocation
 ) : ViewModel() {
+
+    val stateObservable = Observable<ScreenState<MainState>>()
 
     fun getSavedLocations() {
         viewModelScope.launch {
+            stateObservable.callObservers(ScreenState.Loading)
             val locations = async { getLocations() }
-            render.renderLocations(locations.await())
+            stateObservable.callObservers(ScreenState.Render(MainState.ShowLocations(locations.await())))
         }
     }
 
     fun newLocationClicked() {
         viewModelScope.launch {
+            stateObservable.callObservers(ScreenState.Loading)
             val locations = async { requestNewLocation() }
-            render.renderLocations(locations.await())
+            stateObservable.callObservers(ScreenState.Render(MainState.ShowLocations(locations.await())))
+            stateObservable.callObservers(ScreenState.Render(MainState.ShowMessage("New location saved")))
         }
+    }
+
+    fun onDestroy() {
+        stateObservable.clearObservers()
     }
 }

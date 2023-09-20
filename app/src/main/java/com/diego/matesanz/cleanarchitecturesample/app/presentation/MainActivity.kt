@@ -1,17 +1,20 @@
 package com.diego.matesanz.cleanarchitecturesample.app.presentation
 
 import android.os.Bundle
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.diego.matesanz.cleanarchitecturesample.R
 import com.diego.matesanz.cleanarchitecturesample.app.framework.FakeLocationSource
 import com.diego.matesanz.cleanarchitecturesample.app.framework.InMemoryLocationsPersistenceSource
 import com.diego.matesanz.cleanarchitecturesample.data.LocationsRepository
 import com.diego.matesanz.cleanarchitecturesample.databinding.ActivityMainBinding
-import com.diego.matesanz.cleanarchitecturesample.domain.Location
 import com.diego.matesanz.cleanarchitecturesample.useCases.GetLocations
 import com.diego.matesanz.cleanarchitecturesample.useCases.RequestNewLocation
 
-class MainActivity : AppCompatActivity(), Render {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
@@ -22,7 +25,7 @@ class MainActivity : AppCompatActivity(), Render {
         val persistence = InMemoryLocationsPersistenceSource()
         val deviceLocation = FakeLocationSource()
         val locationsRepository = LocationsRepository(persistence, deviceLocation)
-        viewModel = MainViewModel(GetLocations(locationsRepository), RequestNewLocation(locationsRepository), this)
+        viewModel = MainViewModel(GetLocations(locationsRepository), RequestNewLocation(locationsRepository))
         viewModel.getSavedLocations()
     }
 
@@ -30,6 +33,12 @@ class MainActivity : AppCompatActivity(), Render {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        viewModel.stateObservable.addObserver(::updateUI)
+
+        Glide.with(this)
+            .load(R.drawable.loader)
+            .into(binding.layoutLoader.imageViewLoader)
 
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -41,7 +50,33 @@ class MainActivity : AppCompatActivity(), Render {
         }
     }
 
-    override fun renderLocations(locations: List<Location>) {
-        locationItemAdapter.setLocations(locations)
+    override fun onDestroy() {
+        viewModel.onDestroy()
+        super.onDestroy()
+    }
+
+    private fun updateUI(screenState: ScreenState<MainState>) {
+        when (screenState) {
+            ScreenState.Loading -> {
+                binding.isLoading = true
+            }
+
+            is ScreenState.Render -> {
+                processLocationListState(screenState.renderState)
+            }
+        }
+    }
+
+    private fun processLocationListState(renderState: MainState) {
+        binding.isLoading = false
+        when (renderState) {
+            is MainState.ShowLocations -> {
+                locationItemAdapter.setLocations(renderState.locations)
+            }
+
+            is MainState.ShowMessage -> {
+                Toast.makeText(applicationContext, renderState.message, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
